@@ -14,6 +14,11 @@ function macrostart() {
 	waitingSelected = [].map.call(document.querySelectorAll('.waitingMacro:checked'), function (select) {
 		return select.value;
 	});
+	stand = document.querySelector('.stand:checked');
+  if (stand && stand.value == 'on')
+    stand = true;
+  else
+    stand = false;
 
 	if (coachSelected.length == 0 && firstSelected.length == 0 && waitingSelected.length == 0) {
 		alert("매크로를 실행하기 위해서는 예매하기 위한 열차 1개 이상을 선택하십시오.");
@@ -33,6 +38,7 @@ function macrostart() {
 		sessionStorage.setItem('psgInfoPerPrnb3', document.getElementsByName('psgInfoPerPrnb3')[0].value);
 		sessionStorage.setItem('locSeatAttCd1', document.getElementsByName('locSeatAttCd1')[0].value);
 		sessionStorage.setItem('rqSeatAttCd1', document.getElementsByName('rqSeatAttCd1')[0].value);
+    sessionStorage.setItem('stand', stand);
 
 		location.reload();
 	}
@@ -52,6 +58,7 @@ function macrostop() {
 	sessionStorage.removeItem('psgInfoPerPrnb3');
 	sessionStorage.removeItem('locSeatAttCd1');
 	sessionStorage.removeItem('rqSeatAttCd1');
+  sessionStorage.removeItem('stand');
 
 	location.reload();
 }
@@ -68,11 +75,19 @@ if (document.URL.substring(0, dsturl1.length) == dsturl1) {
 		if (firstSelected == null) firstSelected = [];
 		if (waitingSelected == null) waitingSelected = [];
 
+    var topbar = $("div#search_top_tag.tal_c.mgt30");
 		if (sessionStorage.getItem('macro') == "true") {
-			$("div#search_top_tag.tal_c.mgt30").append('<a href="#" id="btnstop" style="margin-left:5px;display:inline-block;height:100%;vertical-align:middle;"><img src="' + chrome.runtime.getURL('images/btn_stop.png') + '"></a>');			
+			topbar.append('<a href="#" id="btnstop" style="margin-left:5px;display:inline-block;height:100%;vertical-align:middle;"><img src="' + chrome.runtime.getURL('images/btn_stop.png') + '"></a>');			
 		} else {
-			$("div#search_top_tag.tal_c.mgt30").append('<a href="#" id="btnstart" style="margin-left:5px;display:inline-block;height:100%;vertical-align:middle;"><img src="' + chrome.runtime.getURL('images/btn_start.png') + '"></a>');	
-		}	
+			topbar.append('<a href="#" id="btnstart" style="margin-left:5px;display:inline-block;height:100%;vertical-align:middle;"><img src="' + chrome.runtime.getURL('images/btn_start.png') + '"></a>');	
+		}
+
+    var stand = sessionStorage.getItem('stand');
+    if (stand == null) stand = 'false';
+
+    var standbox = $("<label></label>").html('  <input type="checkbox" name="checkbox" class="stand"> 입석');
+    standbox.children('input').prop('checked', stand == 'true');
+    topbar.append(standbox);
 		
 		var btnstop = document.getElementById("btnstop");
 		var btnstart = document.getElementById("btnstart");
@@ -147,7 +162,7 @@ if (document.URL.substring(0, dsturl1.length) == dsturl1) {
 						if (coachSpecials.length != 0) {
 							for (j = 0; j < coachSpecials.length; j++) {
 								name = $(coachSpecials[j]).attr('class');
-								if (name == 'btn_small btn_burgundy_dark val_m wx90') {
+								if (name == 'btn_small btn_burgundy_dark val_m wx90' && (!stand || (stand && coachSpecials.children('span').text() == '예약하기'))) {
 									$(coachSpecials[0])[0].click();
 									succeed = true;
 									break;
@@ -162,7 +177,7 @@ if (document.URL.substring(0, dsturl1.length) == dsturl1) {
 						if (firstSpecials.length != 0) {
 							for (j = 0; j < firstSpecials.length; j++) {
 								name = $(firstSpecials[j]).attr('class');
-								if (name == 'btn_small btn_burgundy_dark val_m wx90') {
+								if (name == 'btn_small btn_burgundy_dark val_m wx90' && (stand || (!stand && coachSpecials.children('span').text() == '예약하기'))) {
 									$(firstSpecials[0])[0].click();
 									succeed = true;
 									break;
@@ -177,7 +192,7 @@ if (document.URL.substring(0, dsturl1.length) == dsturl1) {
 						if (waitingSpecials.length != 0) {
 							for (j = 0; j < waitingSpecials.length; j++) {
 								name = $(waitingSpecials[j]).attr('class');
-								if (name == 'btn_small btn_burgundy_dark val_m wx90') {
+								if (name == 'btn_small btn_burgundy_dark val_m wx90' && (stand || (!stand && coachSpecials.children('span').text() == '예약하기'))) {
 									$(waitingSpecials[0])[0].click();
 									succeed = true;
 									break;
@@ -200,13 +215,16 @@ if (document.URL.substring(0, dsturl1.length) == dsturl1) {
 					sessionStorage.removeItem('psgInfoPerPrnb3');
 					sessionStorage.removeItem('locSeatAttCd1');
 					sessionStorage.removeItem('rqSeatAttCd1');
+          sessionStorage.removeItem('stand');
 					chrome.runtime.sendMessage({type: 'playSound'}, function(data) { });
-					//특실 전용 코로나 안내 메세지 제거
-					// document.querySelector('.ui-dialog-buttonset').querySelector('.ui-button').click();
+
+					// 팝업 메세지 제거
+					//document.querySelector('.ui-dialog-buttonset').querySelector('.ui-button').click();
+
 				} else {
 					setTimeout(function() {
 					location.reload();
-					}, 1000);
+					}, 500);
 				}
 			} else {
 				history.go(-1);
