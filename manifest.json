@@ -1,29 +1,47 @@
 {
-  "manifest_version": 3,
-  "name": "SRT Macro",
-  "description": "SRT 자동 예약 매크로",
-  "version": "1.1.0",
-  "icons": {
-    "128": "images/icon128.png"
-  },
-  "content_scripts": [
-    {
-      "js": ["jquery-1.11.3.min.js", "content.js"],
-      "matches": ["https://etk.srail.kr/*"],
-      "run_at": "document_end"
+    "manifest_version": 3,
+    "name": "SRT Macro",
+    "description": "SRT 자동 예약 매크로",
+    "version": "1.1.2",
+    "icons": {
+        "128": "images/icon128.png"
+    },
+    "permissions": [
+        "scripting",
+        "storage"
+    ],
+    "host_permissions": [
+        "https://etk.srail.kr/"
+    ],
+    "content_scripts": [
+        {
+            "js": [
+                "jquery-1.11.3.min.js",
+                "content.js"
+            ],
+            "matches": [
+                "https://etk.srail.kr/*"
+            ],
+            "run_at": "document_end"
+        }
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "images/btn_start.png",
+                "images/btn_stop.png",
+                "assets/tada.mp3"
+            ],
+            "matches": [
+                "https://etk.srail.kr/*"
+            ]
+        }
+    ],
+    "action": {
+        "default_title": "telegram",
+        "default_popup": "popup.html"
     }
-  ],
-  "background": {
-    "service_worker": "background.js"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": ["images/btn_start.png", "images/btn_stop.png", "assets/tada.mp3"],
-      "matches": ["https://etk.srail.kr/*"]
-    }
-  ],
-  "options_ui": {
-    "page": "options.html",
-    "open_in_tab": false
-  }
 }
