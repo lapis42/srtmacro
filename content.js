@@ -224,7 +224,7 @@ if (document.URL.substring(0, dsturl1.length) == dsturl1) {
 				} else {
 					setTimeout(function() {
 					location.reload();
-					}, 500);
+					}, Math.floor(Math.random() * 500 + 500));
 				}
 			} else {
 				history.go(-1);
